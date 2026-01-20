@@ -6,13 +6,11 @@ class GraphColoringSolver:
         self.n_colors = n_colors
         self.pop_size = pop_size
         self.mutation_rate = mutation_rate
-        self.elitism_count = elitism_count  # <--- NUEVO PARÁMETRO
+        self.elitism_count = elitism_count
         
-        # 1. PREPROCESAMIENTO
         self.edges = np.array(list(graph.edges()))
         if self.edges.min() > 0: self.edges -= 1
             
-        # 2. POBLACIÓN
         self.population = np.random.randint(0, self.n_colors, size=(self.pop_size, self.n_nodes))
         self.fitness_scores = np.zeros(self.pop_size)
 
@@ -24,7 +22,6 @@ class GraphColoringSolver:
         self.fitness_scores = conflicts
         return conflicts
 
-    # --- OPERADORES (Igual que antes) ---
     def select_tournament(self, k=4):
         contenders = np.random.randint(0, self.pop_size, size=(self.pop_size, k))
         fitness_vals = self.fitness_scores[contenders]

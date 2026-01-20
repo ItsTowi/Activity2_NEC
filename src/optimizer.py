@@ -1,20 +1,14 @@
-import numpy as np
 from src.solver import GraphColoringSolver
 
-def find_optimal_coloring(graph, start_colors, pop_size=200, max_generations=1000, mutation_rate=0.05, elitism_count=2):
-    """
-    Ahora acepta elitism_count.
-    """
+def find_optimal_coloring(graph, start_colors, pop_size=200, max_generations=1000, mutation_rate=0.05, elitism_count=2, selection='tournament', crossover='uniform', mutation='smart'):
     current_k = start_colors
     best_solution_found = None
     best_k_found = None
+    best_history = []
     
-    print(f"--- INICIANDO (Start k={start_colors}, Pop={pop_size}, Mut={mutation_rate}, Elites={elitism_count}) ---")
+    print(f"--- INICIANDO (Start k={start_colors}, Sel={selection}, Cross={crossover}) ---")
     
     while True:
-        print(f"\n>> Probando con {current_k} colores...")
-        
-        # Pasamos el parámetro de elitismo
         solver = GraphColoringSolver(
             graph, 
             n_colors=current_k, 
@@ -23,15 +17,19 @@ def find_optimal_coloring(graph, start_colors, pop_size=200, max_generations=100
             elitism_count=elitism_count
         )
         
-        solution, conflicts, _ = solver.solve(max_generations, verbose=False)
+        solution, conflicts, history = solver.solve(
+            max_generations=max_generations, 
+            method_sel=selection, 
+            method_cross=crossover, 
+            method_mut=mutation,
+            verbose=False
+        )
         
         if conflicts == 0:
-            print(f"✅ ÉXITO con {current_k} colores.")
             best_solution_found = solution
             best_k_found = current_k
+            best_history = history
             current_k -= 1 
         else:
-            print(f"❌ FALLO con {current_k} colores.")
             break
-            
-    return best_solution_found, best_k_found
+    return best_solution_found, best_k_found, best_history
