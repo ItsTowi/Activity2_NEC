@@ -1,13 +1,19 @@
 import numpy as np
+CONFLICT_WEIGHT = 1028
 
 class GraphColoringSolver:
-    def __init__(self, graph, n_colors, pop_size=100, mutation_rate=0.05, elitism_count=2):
+    def __init__(self, graph, n_colors, pop_size=100, mutation_rate=0.05, elitism_count=2, w_conflict = None):
         self.n_nodes = graph.number_of_nodes()
         self.n_colors = n_colors
         self.pop_size = pop_size
         self.mutation_rate = mutation_rate
         self.elitism_count = elitism_count
-        
+
+        if (w_conflict != None):
+            self.conflict_weight = w_conflict
+        else:
+            self.conflict_weight = CONFLICT_WEIGHT
+
         self.edges = np.array(list(graph.edges()))
         if self.edges.min() > 0: self.edges -= 1
             
@@ -15,12 +21,28 @@ class GraphColoringSolver:
         self.fitness_scores = np.zeros(self.pop_size)
 
     def evaluate(self):
-        """Calcula conflictos."""
+        """Calcula conflictos y suma el número de colores usados."""
+        
+        # --- PARTE 1: Calcular Conflictos (Tu código original) ---
         colors_u = self.population[:, self.edges[:, 0]]
         colors_v = self.population[:, self.edges[:, 1]]
         conflicts = np.sum(colors_u == colors_v, axis=1)
-        self.fitness_scores = conflicts
-        return conflicts
+        
+        # --- PARTE 2: Calcular Colores Únicos (El método rápido) ---
+        # 1. Creamos una COPIA ordenada para contar (no altera self.population)
+        sorted_pop = np.sort(self.population, axis=1)
+        
+        # 2. Vemos dónde hay cambios de valor (diferencias con el vecino)
+        diffs = sorted_pop[:, 1:] != sorted_pop[:, :-1]
+        
+        # 3. Sumamos diferencias + 1 (el primer color siempre cuenta)
+        n_colors_used = np.sum(diffs, axis=1) + 1
+        
+        # --- PARTE 3: Combinar (Fórmula Final) ---
+        # Vector (100,) + Vector (100,) = Vector (100,)
+        self.fitness_scores = (conflicts * self.conflict_weight) + n_colors_used
+        
+        return self.fitness_scores
 
     def select_tournament(self, k=4):
         contenders = np.random.randint(0, self.pop_size, size=(self.pop_size, k))
@@ -99,7 +121,7 @@ class GraphColoringSolver:
                 best_global_fit = current_best_fit
                 best_global_sol = elites_genes[0].copy() # El mejor de los elites
                 if verbose and gen % 50 == 0:
-                    print(f"Gen {gen}: Conflictos {int(best_global_fit)}")
+                    print(f"Gen {gen}: Fitness {int(best_global_fit)}")
                 if best_global_fit == 0:
                     if verbose: print(f"✅ ¡SOLUCIÓN EN GEN {gen}!")
                     break
