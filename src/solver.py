@@ -21,25 +21,21 @@ class GraphColoringSolver:
         self.fitness_scores = np.zeros(self.pop_size)
 
     def evaluate(self):
-        """Calcula conflictos y suma el número de colores usados."""
         
-        # --- PARTE 1: Calcular Conflictos (Tu código original) ---
+        #Obtener conflictos
         colors_u = self.population[:, self.edges[:, 0]]
         colors_v = self.population[:, self.edges[:, 1]]
         conflicts = np.sum(colors_u == colors_v, axis=1)
         
-        # --- PARTE 2: Calcular Colores Únicos (El método rápido) ---
-        # 1. Creamos una COPIA ordenada para contar (no altera self.population)
+        # Calcular colores usados
         sorted_pop = np.sort(self.population, axis=1)
-        
-        # 2. Vemos dónde hay cambios de valor (diferencias con el vecino)
         diffs = sorted_pop[:, 1:] != sorted_pop[:, :-1]
-        
-        # 3. Sumamos diferencias + 1 (el primer color siempre cuenta)
         n_colors_used = np.sum(diffs, axis=1) + 1
         
-        # --- PARTE 3: Combinar (Fórmula Final) ---
-        # Vector (100,) + Vector (100,) = Vector (100,)
+        # Calcular score final, mientras menor mejor
+        # Formula = (Weight * Conflictos) + Colores Utilizados
+        # Como minimo fitness scores = solucion optima
+
         self.fitness_scores = (conflicts * self.conflict_weight) + n_colors_used
         
         return self.fitness_scores
