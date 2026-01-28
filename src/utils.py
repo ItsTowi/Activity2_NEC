@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib.lines as mlines
 from src.loading_data import load_graph  # Importamos la función de lectura
 
-def loading_graphs(path, size=""):
+def loading_graphs(path):
     if os.path.exists(path):
         graph = load_graph(path)
         if graph:
-            print(f"{size} Graph Loaded")
+            print("Graph Loaded")
             print(f"Nodes: {graph.number_of_nodes()}")
             print(f"Edges: {graph.number_of_edges()}")
         return graph

@@ -1,5 +1,5 @@
 import numpy as np
-CONFLICT_WEIGHT = 1028
+CONFLICT_WEIGHT = 1024
 
 class GraphColoringSolver:
     def __init__(self, graph, n_colors, pop_size=100, mutation_rate=0.05, elitism_count=2, w_conflict = None):
@@ -91,7 +91,7 @@ class GraphColoringSolver:
         offspring[mask] = new_vals
         return offspring
 
-    # --- BUCLE PRINCIPAL ---
+    # Principal
     def solve(self, max_generations, method_sel='tournament', method_cross='uniform', method_mut='smart', verbose=True):
         self.evaluate() # Evaluar inicial
         
@@ -100,16 +100,15 @@ class GraphColoringSolver:
         
         for gen in range(max_generations):
             
-            # 1. IDENTIFICAR ELITES (Antes de que la población cambie)
-            # Ordenamos índices por fitness (menor a mayor)
+            # Obtener elite
             sorted_indices = np.argsort(self.fitness_scores)
             
-            # Guardamos los k mejores (sus genes y su fitness)
+            # guardamos los k mejores
             elite_indices = sorted_indices[:self.elitism_count]
             elites_genes = self.population[elite_indices].copy()
             elites_fitness = self.fitness_scores[elite_indices].copy()
             
-            # Guardamos historial del mejor absoluto
+            # historial del mejor absoluto
             current_best_fit = elites_fitness[0]
             history.append(current_best_fit)
             
@@ -118,11 +117,10 @@ class GraphColoringSolver:
                 best_global_sol = elites_genes[0].copy() # El mejor de los elites
                 if verbose and gen % 50 == 0:
                     print(f"Gen {gen}: Fitness {int(best_global_fit)}")
-                if best_global_fit == 0:
-                    if verbose: print(f"✅ ¡SOLUCIÓN EN GEN {gen}!")
-                    break
+                # Para parar con la "busqueda" habría que meter la solucion por parametro
+                # pero no lo vamos a hacer, entonces es un recorrido
 
-            # 2. EVOLUCIÓN (Crear hijos)
+            # Hijos
             if method_sel == 'roulette': parents = self.select_roulette()
             else: parents = self.select_tournament()
                 
@@ -132,15 +130,14 @@ class GraphColoringSolver:
             if method_mut == 'random': offspring = self.mutate_random(offspring)
             else: offspring = self.mutate_smart(offspring)
             
-            # 3. REEMPLAZO Y EVALUACIÓN
+            # Evaluar hijos
             self.population = offspring
             self.evaluate() # Evaluamos los nuevos hijos
             
-            # 4. APLICAR ELITISMO (Sobrescribir los peores hijos con los elites guardados)
-            # Ordenamos la NUEVA población para encontrar a los peores
+            # Hay q meter a la elite
             sorted_indices_new = np.argsort(self.fitness_scores)
             
-            # Los peores están al final de la lista ordenada (índices altos)
+            # Los peores están al final de la lista ordenada
             worst_indices = sorted_indices_new[-self.elitism_count:]
             
             # Reemplazamos
